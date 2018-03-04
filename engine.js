@@ -334,7 +334,6 @@ function mouseCalculations(){
 	}
 }
 
-
 function draw() {
 	d = new Date();
 	if((d.getTime()-second)>=1000){
