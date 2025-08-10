@@ -1,3 +1,4 @@
+// Values will be set to actual canvas size at runtime
 var screenHight = 700;
 var screenWidth = 900;
 var fovAngle = 90;

@@ -4,7 +4,8 @@ let d, second, fps;
 
 function setup() {
   createCanvas(screenWidth, screenHight);
-  cam = new Cam(0-screenWidth/2,0-screenHight/2,0,0,0);
+  // Start facing diagonally right (45° yaw), with zero pitch
+  cam = new Cam(0-screenWidth/2,0-screenHight/2,0,Math.PI/4,0);
   startMouseX = mouseX;
   startMouseY = mouseY;
   space = [];
@@ -34,23 +35,50 @@ function mousePressed(){
 }
 
 function keyDown() {
-  if (keyIsDown(RIGHT_ARROW)) {
+  // Keyboard controls
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(KEY_D)) {
     cam.right();
   }
-  if (keyIsDown(LEFT_ARROW)) {
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(KEY_A)) {
     cam.left();
   }
-  if (keyIsDown(UP_ARROW)) {
+  if (keyIsDown(UP_ARROW) || keyIsDown(KEY_W)) {
     cam.forward();
   }
-  if (keyIsDown(DOWN_ARROW)) {
+  if (keyIsDown(DOWN_ARROW) || keyIsDown(KEY_S)) {
     cam.backward();
+  }
+
+  // Touch movement (left half): translate moveVecX/Y to strafing/forward
+  if (typeof moveVecX !== 'undefined' && typeof moveVecY !== 'undefined' && !window.isMenuVisible()) {
+    const strafe = moveVecX;
+    const forward = -moveVecY; // up is negative y on screen
+    // Apply scaled movement in camera plane
+    const speed = flyspeed * 0.6; // slight reduction for touch precision
+    // forward/back along viewx
+    cam.x += speed * forward * Math.sin(cam.viewx);
+    cam.z += speed * forward * Math.cos(cam.viewx);
+    // strafe perpendicular to viewx
+    cam.x += speed * strafe * Math.cos(cam.viewx);
+    cam.z -= speed * strafe * Math.sin(cam.viewx);
   }
 }
 
 function mouseCalculations(){
-  cam.viewx = (mouseX - startMouseX ) / 100;
-  cam.viewy = (mouseY - startMouseY ) / 100;
+  // If pointer locked, use relative deltas; otherwise preserve original behavior
+  const menuVisible = typeof window.isMenuVisible === 'function' ? window.isMenuVisible() : false;
+  if (!menuVisible && typeof mouseDX !== 'undefined' && typeof mouseDY !== 'undefined' && (document.pointerLockElement === canvas)) {
+    cam.viewx += mouseDX / 500; // sensitivity
+    cam.viewy += mouseDY / 500;
+    mouseDX = 0;
+    mouseDY = 0;
+  } else if (!menuVisible && typeof touchLookDX !== 'undefined' && typeof touchLookDY !== 'undefined') {
+    // Touch look (right half) when not in menu
+    cam.viewx += touchLookDX / 300; // separate sensitivity for touch
+    cam.viewy += touchLookDY / 300;
+    touchLookDX = 0;
+    touchLookDY = 0;
+  }
   if(cam.viewy>Math.PI/2){
     cam.viewy = Math.PI/2;
   }else if (cam.viewy< 0-Math.PI/2){
