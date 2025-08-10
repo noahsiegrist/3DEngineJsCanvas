@@ -10,7 +10,3 @@ https://3djs.netlify.app/
 
 ## Install
 Clone the project and open the index.html in your browser.
-
-## P5
-The P5 Library is used to handel the canves and draw on it.
-https://p5js.org
